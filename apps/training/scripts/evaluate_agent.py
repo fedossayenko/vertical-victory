@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 import gymnasium as gym
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+from stable_baselines3.common.monitor import Monitor
 
 # Import MaskablePPO evaluation utilities
 from sb3_contrib.common.maskable.evaluation import evaluate_policy
@@ -52,9 +53,11 @@ def create_eval_env(num_players: int = 2, seed: int = 0):
     def make_env():
         env = FiveTowersEnv(num_players=num_players)
         env.reset(seed=seed)
-        return ActionMasker(env, mask_fn)
+        env = ActionMasker(env, mask_fn)
+        env = Monitor(env)
+        return env
 
-    return make_env()
+    return make_env
 
 
 def evaluate_agent(
@@ -103,7 +106,6 @@ def evaluate_agent(
         env,
         n_eval_episodes=num_episodes,
         deterministic=True,
-        return_episode_rewards=True,
     )
 
     print(f"\nResults:")
@@ -176,14 +178,19 @@ def collect_statistics(model, env, num_episodes: int) -> Dict:
     round_counts = []
 
     for episode in range(num_episodes):
-        obs, _ = env.reset()
+        obs = env.reset()
         done = False
 
         episode_data = []
 
         while not done:
             action, _ = model.predict(obs, deterministic=True)
-            obs, reward, done, truncated, info = env.step(action)
+            step_result = env.step(action)
+            if len(step_result) == 4:
+                obs, reward, done, info = step_result
+                truncated = False
+            else:
+                obs, reward, done, truncated, info = step_result
 
             done_flag = done or truncated
 
@@ -191,6 +198,10 @@ def collect_statistics(model, env, num_episodes: int) -> Dict:
             if isinstance(info, dict):
                 if 'episode' in info:
                     episode_data.append(info['episode'])
+
+        # Progress output every 10 episodes
+        if (episode + 1) % 10 == 0:
+            print(f"  Processed {episode + 1}/{num_episodes} episodes...", flush=True)
 
         # Get final scores (need to access underlying env)
         unwrapped_env = env.get_attr('game_state')[0] if hasattr(env, 'get_attr') else None
