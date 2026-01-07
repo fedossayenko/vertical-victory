@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "vertical-victory-training"
+version = "0.1.0"
+description = "PPO training environment for VerticalVictory (5 Towers card game)"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "five_towers"}]
+
+[tool.poetry.dependencies]
+python = "^3.14"
+gymnasium = "^1.0.0"
+stable-baselines3 = "^2.8.0"
+torch = "^2.5.0"
+numpy = "^2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+black = "^25.0.0"
+ruff = "^0.8.0"
+pytest-cov = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py314']
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
