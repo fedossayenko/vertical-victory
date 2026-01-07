@@ -10,8 +10,10 @@ packages = [{include = "five_towers"}]
 python = "^3.14"
 gymnasium = "^1.0.0"
 stable-baselines3 = "^2.8.0"
+sb3-contrib = "^2.8.0"
 torch = "^2.5.0"
 numpy = "^2.0.0"
+tensorboard = "^2.18.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

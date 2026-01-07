@@ -467,31 +467,36 @@ class FiveTowersEnv(gym.Env):
 
         return encoded
 
-    def _update_action_mask(self) -> None:
-        """Update action mask based on current state."""
+    def action_masks(self) -> NDArray[np.bool_]:
+        """
+        Get action mask for invalid action masking (MaskablePPO).
+
+        Returns:
+            Boolean mask where True = valid action, False = invalid action
+        """
         if self.game_state is None:
-            return
+            return np.zeros(11, dtype=np.bool_)
 
         phase = self.game_state.phase
 
         if phase == GamePhase.BIDDING:
             # Mask for bidding actions (0-5: pass + bid 1-5)
-            mask = np.zeros(6, dtype=np.float32)
-            legal_bids = get_legal_bids(self.game_state, self.player_index)
+            mask = np.zeros(11, dtype=np.bool_)
 
             # Pass is always legal if not all passed
             if len(self.game_state.active_bidders) > 1:
-                mask[0] = 1.0
+                mask[0] = True
 
             # Legal bids
+            legal_bids = get_legal_bids(self.game_state, self.player_index)
             for bid in legal_bids:
-                mask[bid] = 1.0
+                mask[bid] = True
 
-            self.action_mask = mask
+            return mask
 
         elif phase == GamePhase.BUILDING:
             # Mask for building actions (0-10: 5 placements + 5 teardowns + skip)
-            mask = np.zeros(11, dtype=np.float32)
+            mask = np.zeros(11, dtype=np.bool_)
 
             if self.game_state.cards_to_process:
                 card = self.game_state.cards_to_process[0]
@@ -502,19 +507,28 @@ class FiveTowersEnv(gym.Env):
                 # Placement actions
                 for suit in legal_placements:
                     suit_idx = list(TowerSuit).index(suit)
-                    mask[suit_idx] = 1.0
+                    mask[suit_idx] = True
 
                 # Tear down actions
                 legal_tears = get_legal_tear_downs(self.game_state, self.player_index)
                 for suit in legal_tears:
                     suit_idx = list(TowerSuit).index(suit)
-                    mask[5 + suit_idx] = 1.0
+                    mask[5 + suit_idx] = True
 
-            self.action_mask = mask
+            return mask
 
         else:
-            # Game over - no actions
-            self.action_mask = np.zeros(11, dtype=np.float32)
+            # Game over - no valid actions
+            return np.zeros(11, dtype=np.bool_)
+
+    def _update_action_mask(self) -> None:
+        """Update action mask based on current state (for info dict)."""
+        if self.game_state is None:
+            return
+
+        # Get boolean mask and convert to float for info dict
+        bool_mask = self.action_masks()
+        self.action_mask = bool_mask.astype(np.float32)
 
     def _get_info(self) -> Dict:
         """Get info dictionary."""
