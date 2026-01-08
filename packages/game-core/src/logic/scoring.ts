@@ -16,9 +16,6 @@ export function calculatePlayerScore(player: PlayerState): number {
 
   const score = towerScores + bonus - penalty;
 
-  // Update player's totalScore field
-  (player as any).totalScore = score;
-
   return score;
 }
 

@@ -1,12 +1,26 @@
 import { Card, Tower, TowerSuit } from '@vertical-victory/shared-types';
 import { produce } from 'immer';
 
+/**
+ * Computes the height of a tower (number of cards).
+ */
+export function getTowerHeight(tower: Tower): number {
+  return tower.cards.length;
+}
+
+/**
+ * Computes whether a tower is capped (has a Tower Top card).
+ */
+export function isTowerCapped(tower: Tower): boolean {
+  return tower.cards.some(c => c.isTowerTop);
+}
+
 export function canPlaceCard(tower: Tower, card: Card): boolean {
   // Empty tower accepts any card
   if (tower.cards.length === 0) return true;
 
   // Tower Top (value 0) caps the tower
-  if (tower.isCapped) return false;
+  if (isTowerCapped(tower)) return false;
 
   const topCard = tower.cards[tower.cards.length - 1];
 
@@ -14,7 +28,7 @@ export function canPlaceCard(tower: Tower, card: Card): boolean {
   if (topCard.isReset) return true;
 
   // Wild card (value 9) can go anywhere except on Tower Top
-  if (card.isWild) return !tower.isCapped;
+  if (card.isWild) return !isTowerCapped(tower);
 
   // Standard rule: descending order
   return card.value < topCard.value;
@@ -38,6 +52,6 @@ export function tearDown(tower: Tower): { tower: Tower; cards: Card[] } {
 export function calculateTowerScore(tower: Tower): number {
   if (tower.cards.length === 0) return 0;
 
-  const baseScore = tower.cards.length;
-  return tower.isCapped ? baseScore * 2 : baseScore;
+  const baseScore = getTowerHeight(tower);
+  return isTowerCapped(tower) ? baseScore * 2 : baseScore;
 }

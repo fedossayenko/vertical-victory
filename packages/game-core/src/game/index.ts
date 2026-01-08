@@ -4,7 +4,7 @@ import { TowerSuit as SuitEnum, GamePhase as PhaseEnum } from '@vertical-victory
 import { createStandardDeck, shuffleDeck, dealDisplayCards } from '../logic/deck';
 import { bid, pass, endAuction } from './phases/bidding';
 import { placeCard, tearDownTower } from './phases/building';
-import { produce } from 'immer';
+import { calculatePlayerScore } from '../logic/scoring';
 
 export const FiveTowersGame: Game<GameState> = {
   name: 'five-towers',
@@ -22,11 +22,11 @@ export const FiveTowersGame: Game<GameState> = {
       id: String(i),
       name: `Player ${i + 1}`,
       towers: {
-        sand: { suit: 'sand', cards: [], height: 0, isCapped: false },
-        stone: { suit: 'stone', cards: [], height: 0, isCapped: false },
-        vegetation: { suit: 'vegetation', cards: [], height: 0, isCapped: false },
-        water: { suit: 'water', cards: [], height: 0, isCapped: false },
-        fire: { suit: 'fire', cards: [], height: 0, isCapped: false }
+        sand: { suit: SuitEnum.SAND, cards: [] },
+        stone: { suit: SuitEnum.STONE, cards: [] },
+        vegetation: { suit: SuitEnum.VEGETATION, cards: [] },
+        water: { suit: SuitEnum.WATER, cards: [] },
+        fire: { suit: SuitEnum.FIRE, cards: [] }
       },
       hand: [],
       tearDownPile: [],
@@ -57,12 +57,12 @@ export const FiveTowersGame: Game<GameState> = {
       turn: {
         order: {
           first: () => 0,
-          next: (G, ctx) => (G.currentPlayerIndex + 1) % ctx.numPlayers
+          next: (_G: any, ctx: any) => (_G.currentPlayerIndex + 1) % ctx.numPlayers
         }
       },
       endIf: (G) => G.auctionWinnerIndex !== null,
       next: PhaseEnum.BUILDING,
-      onEnd: (G, ctx, random) => {
+      onEnd: (G: any, _ctx: any, random: any) => {
         return endAuction(G, random);
       }
     },
@@ -74,13 +74,13 @@ export const FiveTowersGame: Game<GameState> = {
 
   turn: {
     moveLimit: 1,
-    onEnd: (G, ctx) => {
+    onEnd: (G: any, ctx: any) => {
       // Advance turn
       G.currentPlayerIndex = (G.currentPlayerIndex + 1) % ctx.numPlayers;
     }
   },
 
-  endIf: (G) => {
+  endIf: (G: any) => {
     return G.phase === PhaseEnum.GAME_OVER ? { winner: getWinner(G) } : undefined;
   }
 };
@@ -91,7 +91,7 @@ function getWinner(G: GameState): string {
   let highestScore = 0;
 
   for (const player of G.players) {
-    const score = player.totalScore;
+    const score = calculatePlayerScore(player);
     if (score > highestScore) {
       highestScore = score;
       winner = player.id;

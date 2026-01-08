@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createStandardDeck, shuffleDeck, dealDisplayCards } from '../src/logic/deck';
 import { TowerSuit } from '@vertical-victory/shared-types';
 
