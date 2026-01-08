@@ -28,8 +28,6 @@ export interface Card {
 export interface Tower {
   suit: TowerSuit;
   cards: readonly Card[];
-  readonly height: number;
-  readonly isCapped: boolean;
 }
 
 export interface PlayerState {
@@ -51,8 +49,8 @@ export interface GameState {
   deck: readonly Card[];
   discardPile: readonly Card[];
   currentHighBid: number;
-  highBidderIndex: number | null;
-  auctionWinnerIndex: number | null;
+  highBidderIndex: string | null;
+  auctionWinnerIndex: string | null;
   cardsToProcess: readonly Card[];
   roundNumber: number;
 }

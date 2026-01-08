@@ -1,11 +1,11 @@
 import type { Move } from 'boardgame.io';
-import type { GameState } from '@vertical-victory/shared-types';
+import type { GameState, PlayerState } from '@vertical-victory/shared-types';
 import { GamePhase } from '@vertical-victory/shared-types';
-import { produce } from 'immer';
+import { produce, type WritableDraft } from 'immer';
 import { dealDisplayCards } from '../../logic/deck';
 
 export const bid: Move<GameState> = ({ G, ctx, events }) => {
-  const amount = ctx.args?.amount as number;
+  const amount = (ctx as any).args?.amount as number;
   const playerID = ctx.currentPlayer;
 
   // Validation: must be higher than current bid
@@ -19,14 +19,14 @@ export const bid: Move<GameState> = ({ G, ctx, events }) => {
   }
 
   // Validation: player must not have passed
-  const player = G.players[playerID];
+  const player = G.players[Number(playerID)];
   if (player.hasPassed) {
     throw new Error('Player has already passed');
   }
 
   // Update state
   return produce(G, draft => {
-    draft.players[playerID].currentBid = amount;
+    draft.players[Number(playerID)].currentBid = amount;
     draft.currentHighBid = amount;
     draft.highBidderIndex = playerID;
 
@@ -48,13 +48,13 @@ export const pass: Move<GameState> = ({ G, ctx }) => {
 
   // Update state
   return produce(G, draft => {
-    draft.players[playerID].hasPassed = true;
-    draft.players[playerID].currentBid = null;
+    draft.players[Number(playerID)].hasPassed = true;
+    draft.players[Number(playerID)].currentBid = null;
 
     // Check if auction is over (only 1 player hasn't passed)
     const activeBidders = draft.players.filter(p => !p.hasPassed);
     if (activeBidders.length === 1) {
-      draft.auctionWinnerIndex = Number(activeBidders[0].id);
+      draft.auctionWinnerIndex = activeBidders[0].id;
     }
   });
 };
@@ -80,8 +80,8 @@ export function endAuction(G: GameState, random: { Shuffle<T>(arr: T[]): T[] }):
   const remainingCards = G.displayCards.slice(winningBid);
 
   return produce(G, draft => {
-    draft.players[winnerIndex].hand = [
-      ...draft.players[winnerIndex].hand,
+    draft.players[Number(winnerIndex)].hand = [
+      ...draft.players[Number(winnerIndex)].hand,
       ...selectedCards
     ];
     draft.cardsToProcess = selectedCards;
@@ -90,7 +90,7 @@ export function endAuction(G: GameState, random: { Shuffle<T>(arr: T[]): T[] }):
   });
 }
 
-function startNewRound(G: any, random: { Shuffle<T>(arr: T[]): T[] }): void {
+function startNewRound(G: WritableDraft<GameState>, random: { Shuffle<T>(arr: T[]): T[] }): void {
   // Deal 5 new cards
   const { deck: newDeck, cards } = dealDisplayCards(G.deck, 5);
 
@@ -103,6 +103,6 @@ function startNewRound(G: any, random: { Shuffle<T>(arr: T[]): T[] }): void {
   G.highBidderIndex = null;
   G.auctionWinnerIndex = null;
   G.roundNumber++;
-  G.deck = newDeck;
-  G.displayCards = cards;
+  (G as any).deck = newDeck;
+  (G as any).displayCards = cards;
 }

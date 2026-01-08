@@ -14,7 +14,7 @@ describe('Tower', () => {
 
   describe('canPlaceCard', () => {
     it('should accept any card on empty tower', () => {
-      const tower: Tower = { suit: TowerSuit.SAND, cards: [], height: 0, isCapped: false };
+      const tower: Tower = { suit: TowerSuit.SAND, cards: [] };
       const card = createMockCard(TowerSuit.SAND, 10);
       expect(canPlaceCard(tower, card)).toBe(true);
     });
@@ -23,9 +23,7 @@ describe('Tower', () => {
       const cards = [createMockCard(TowerSuit.SAND, 15), createMockCard(TowerSuit.SAND, 10)];
       const tower: Tower = {
         suit: TowerSuit.SAND,
-        cards,
-        height: 2,
-        isCapped: false
+        cards
       };
       const nextCard = createMockCard(TowerSuit.SAND, 5);
       expect(canPlaceCard(tower, nextCard)).toBe(true);
@@ -35,9 +33,7 @@ describe('Tower', () => {
       const cards = [createMockCard(TowerSuit.SAND, 10)];
       const tower: Tower = {
         suit: TowerSuit.SAND,
-        cards,
-        height: 1,
-        isCapped: false
+        cards
       };
       const nextCard = createMockCard(TowerSuit.SAND, 15);
       expect(canPlaceCard(tower, nextCard)).toBe(false);
@@ -59,9 +55,7 @@ describe('Tower', () => {
       const cards = [createMockCard(TowerSuit.SAND, 8)];
       const tower: Tower = {
         suit: TowerSuit.SAND,
-        cards,
-        height: 1,
-        isCapped: false
+        cards
       };
       const highCard = createMockCard(TowerSuit.SAND, 15);
       expect(canPlaceCard(tower, highCard)).toBe(true);
@@ -71,9 +65,7 @@ describe('Tower', () => {
       const cards = [createMockCard(TowerSuit.SAND, 5)];
       const tower: Tower = {
         suit: TowerSuit.SAND,
-        cards,
-        height: 1,
-        isCapped: false
+        cards
       };
       const wildCard = createMockCard(TowerSuit.SAND, 9);
       expect(canPlaceCard(tower, wildCard)).toBe(true);
@@ -82,7 +74,7 @@ describe('Tower', () => {
 
   describe('addCard', () => {
     it('should add card to empty tower', () => {
-      const tower: Tower = { suit: TowerSuit.SAND, cards: [], height: 0, isCapped: false };
+      const tower: Tower = { suit: TowerSuit.SAND, cards: [] };
       const card = createMockCard(TowerSuit.SAND, 10);
       const newTower = addCard(tower, card);
       expect(newTower.cards.length).toBe(1);
@@ -93,9 +85,7 @@ describe('Tower', () => {
       const cards = [createMockCard(TowerSuit.SAND, 10)];
       const tower: Tower = {
         suit: TowerSuit.SAND,
-        cards,
-        height: 1,
-        isCapped: false
+        cards
       };
       const newCard = createMockCard(TowerSuit.SAND, 5);
       const newTower = addCard(tower, newCard);
@@ -104,7 +94,7 @@ describe('Tower', () => {
     });
 
     it('should not mutate original tower', () => {
-      const tower: Tower = { suit: TowerSuit.SAND, cards: [], height: 0, isCapped: false };
+      const tower: Tower = { suit: TowerSuit.SAND, cards: [] };
       const card = createMockCard(TowerSuit.SAND, 10);
       const originalLength = tower.cards.length;
       addCard(tower, card);
@@ -131,7 +121,7 @@ describe('Tower', () => {
     });
 
     it('should tear down empty tower', () => {
-      const tower: Tower = { suit: TowerSuit.SAND, cards: [], height: 0, isCapped: false };
+      const tower: Tower = { suit: TowerSuit.SAND, cards: [] };
       const { tower: newTower, cards } = tearDown(tower);
       expect(newTower.cards.length).toBe(0);
       expect(cards.length).toBe(0);
@@ -140,7 +130,7 @@ describe('Tower', () => {
 
   describe('calculateTowerScore', () => {
     it('should return 0 for empty tower', () => {
-      const tower: Tower = { suit: TowerSuit.SAND, cards: [], height: 0, isCapped: false };
+      const tower: Tower = { suit: TowerSuit.SAND, cards: [] };
       expect(calculateTowerScore(tower)).toBe(0);
     });
 
